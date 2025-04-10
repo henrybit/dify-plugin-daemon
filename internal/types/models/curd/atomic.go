@@ -2,6 +2,8 @@ package curd
 
 import (
 	"errors"
+	"github.com/langgenius/dify-plugin-daemon/internal/utils/cache"
+	"strings"
 
 	"github.com/langgenius/dify-plugin-daemon/internal/db"
 	"github.com/langgenius/dify-plugin-daemon/internal/types/models"
@@ -185,6 +187,18 @@ func UninstallPlugin(
 		db.Equal("tenant_id", tenant_id),
 	)
 
+	pluginInstallationCacheKey := strings.Join(
+		[]string{
+			"plugin_id",
+			plugin_unique_identifier.PluginID(),
+			"tenant_id",
+			tenant_id,
+		},
+		":",
+	)
+
+	_ = cache.AutoDelete[models.PluginInstallation](pluginInstallationCacheKey)
+
 	if err != nil {
 		if err == db.ErrDatabaseNotFound {
 			return nil, errors.New("plugin has not been installed")
@@ -234,9 +248,8 @@ func UninstallPlugin(
 		// delete tool installation
 		if declaration.Tool != nil {
 			toolInstallation := &models.ToolInstallation{
-				PluginID:               pluginToBeReturns.PluginID,
-				PluginUniqueIdentifier: pluginToBeReturns.PluginUniqueIdentifier,
-				TenantID:               tenant_id,
+				PluginID: pluginToBeReturns.PluginID,
+				TenantID: tenant_id,
 			}
 
 			err := db.DeleteByCondition(&toolInstallation, tx)
@@ -248,9 +261,8 @@ func UninstallPlugin(
 		// delete agent installation
 		if declaration.AgentStrategy != nil {
 			agentStrategyInstallation := &models.AgentStrategyInstallation{
-				PluginID:               pluginToBeReturns.PluginID,
-				PluginUniqueIdentifier: pluginToBeReturns.PluginUniqueIdentifier,
-				TenantID:               tenant_id,
+				PluginID: pluginToBeReturns.PluginID,
+				TenantID: tenant_id,
 			}
 
 			err := db.DeleteByCondition(&agentStrategyInstallation, tx)
@@ -262,9 +274,8 @@ func UninstallPlugin(
 		// delete model installation
 		if declaration.Model != nil {
 			modelInstallation := &models.AIModelInstallation{
-				PluginID:               pluginToBeReturns.PluginID,
-				PluginUniqueIdentifier: pluginToBeReturns.PluginUniqueIdentifier,
-				TenantID:               tenant_id,
+				PluginID: pluginToBeReturns.PluginID,
+				TenantID: tenant_id,
 			}
 
 			err := db.DeleteByCondition(&modelInstallation, tx)
@@ -408,8 +419,8 @@ func UpgradePlugin(
 		if originalDeclaration.Model != nil {
 			// delete the original ai model installation
 			err := db.DeleteByCondition(&models.AIModelInstallation{
-				PluginUniqueIdentifier: original_plugin_unique_identifier.String(),
-				TenantID:               tenant_id,
+				PluginID: original_plugin_unique_identifier.PluginID(),
+				TenantID: tenant_id,
 			}, tx)
 
 			if err != nil {
@@ -436,8 +447,8 @@ func UpgradePlugin(
 		if originalDeclaration.Tool != nil {
 			// delete the original tool installation
 			err := db.DeleteByCondition(&models.ToolInstallation{
-				PluginUniqueIdentifier: original_plugin_unique_identifier.String(),
-				TenantID:               tenant_id,
+				PluginID: original_plugin_unique_identifier.PluginID(),
+				TenantID: tenant_id,
 			}, tx)
 
 			if err != nil {
@@ -464,8 +475,8 @@ func UpgradePlugin(
 		if originalDeclaration.AgentStrategy != nil {
 			// delete the original agent installation
 			err := db.DeleteByCondition(&models.AgentStrategyInstallation{
-				PluginUniqueIdentifier: original_plugin_unique_identifier.String(),
-				TenantID:               tenant_id,
+				PluginID: original_plugin_unique_identifier.PluginID(),
+				TenantID: tenant_id,
 			}, tx)
 
 			if err != nil {

@@ -20,11 +20,17 @@ type LocalPluginRuntime struct {
 	// python env init timeout
 	pythonEnvInitTimeout int
 
+	// python compileall extra args
+	pythonCompileAllExtraArgs string
+
 	// to create a new python virtual environment, we need a default python interpreter
 	// by using its venv module
 	defaultPythonInterpreterPath string
 
-	pipMirrorUrl string
+	pipMirrorUrl    string
+	pipPreferBinary bool
+	pipVerbose      bool
+	pipExtraArgs    string
 
 	// proxy settings
 	HttpProxy  string
@@ -38,19 +44,27 @@ type LocalPluginRuntime struct {
 }
 
 type LocalPluginRuntimeConfig struct {
-	PythonInterpreterPath string
-	PythonEnvInitTimeout  int
-	HttpProxy             string
-	HttpsProxy            string
-	PipMirrorUrl          string
+	PythonInterpreterPath     string
+	PythonEnvInitTimeout      int
+	PythonCompileAllExtraArgs string
+	HttpProxy                 string
+	HttpsProxy                string
+	PipMirrorUrl              string
+	PipPreferBinary           bool
+	PipVerbose                bool
+	PipExtraArgs              string
 }
 
 func NewLocalPluginRuntime(config LocalPluginRuntimeConfig) *LocalPluginRuntime {
 	return &LocalPluginRuntime{
 		defaultPythonInterpreterPath: config.PythonInterpreterPath,
 		pythonEnvInitTimeout:         config.PythonEnvInitTimeout,
+		pythonCompileAllExtraArgs:    config.PythonCompileAllExtraArgs,
 		HttpProxy:                    config.HttpProxy,
 		HttpsProxy:                   config.HttpsProxy,
 		pipMirrorUrl:                 config.PipMirrorUrl,
+		pipPreferBinary:              config.PipPreferBinary,
+		pipVerbose:                   config.PipVerbose,
+		pipExtraArgs:                 config.PipExtraArgs,
 	}
 }
